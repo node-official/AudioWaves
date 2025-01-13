@@ -1,0 +1,46 @@
+@charset "UTF-8";
+
+:root {
+    color-scheme: dark;
+
+    --menico-ui--background: #0f0f0f;
+    --menico-ui--text: #ececec;
+}
+
+*, ::before, ::after {
+    box-sizing: border-box;
+
+    margin: 0;
+    padding: 0;
+
+    border: none;
+}
+
+html {
+    font-size: 0;
+}
+
+html {
+    text-rendering: optimizeLegibility;
+}
+
+body {
+    font-family: 'Consolas', sans-serif;
+}
+
+body {
+    background-color: var(--menico-ui--background);
+    color: var(--menico-ui--text);
+}
+
+body, #rootLayout {
+    overflow: hidden;
+}
+
+.iWorkspace {
+    cursor: grab;
+}
+
+.iWorkspace.isDragging {
+    cursor: grabbing;
+}
