@@ -37,7 +37,6 @@ function PlayTrack(file) {
     analyser = audioContext.createAnalyser();
     
     audio.src = URL.createObjectURL(file);
-    //audio.src = 'Acroamatic_Abatement.wav'; // URL
     
     source = audioContext.createMediaElementSource(audio);
     
@@ -52,7 +51,7 @@ function PlayTrack(file) {
 
 function DrawBar(x1, y1, x2, y2, frequency) {
     ctx.strokeStyle = `rgb(${frequency}, 200, ${frequency})`;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1;
     
     ctx.beginPath();
     
@@ -74,8 +73,6 @@ function DrawCircle() {
 }
 
 function CanvasRender() {
-    //piece = audio.currentTime / audio.duration;
-    
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
     
     DrawCircle();
@@ -96,11 +93,11 @@ function CanvasRender() {
     ctx.arc(centerX, centerY, 118, 0, Math.PI * (2 * piece));
     
     ctx.stroke();
+
+    let rads = Math.PI * 2 / 200;
     
     analyser.getByteFrequencyData(frequencyArray);
     for (let i = 0; i < 200; i++) {
-        let rads = Math.PI * 2 / 200;
-        
         let barHeight = frequencyArray[i] * 0.6 * 1;
         
         x = centerX + Math.cos(rads * i) * 120;
@@ -115,6 +112,8 @@ function CanvasRender() {
 }
 
 canvas.addEventListener('click', () => {
+    if(!audioInit) return;
+    
     audio.paused ? audio.play() : audio.pause();
 });
 
