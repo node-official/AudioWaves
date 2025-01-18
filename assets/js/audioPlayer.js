@@ -1,7 +1,19 @@
+/**
+ * Audio Waves
+ * 
+ * Latest release: (see in ReadMe.txt)
+ * Developer: Node
+ * 
+ * Copyright (c) 2025, Node. All rights reserved.
+ * 
+ */
+
 'use strict';
 
 let audioInit = false;
 let isFileDragging = false;
+
+const audioStatusText = document.getElementById('currentStatus');
 
 const canvas = document.getElementById('iWorkspace');
 const ctx = canvas.getContext('2d');
@@ -26,6 +38,23 @@ function ReCalculateCanvasSize() {
     
     centerX = canvasWidth / 2;
     centerY = canvasHeight / 2;
+}
+
+function UpdateAudioStatus() {
+    if(!audioInit) return;
+    
+    const audioPlayStatus = audio.paused ? 'Paused' : 'Playing';
+    
+    const currentTime = audio.currentTime;
+    const totalTime = audio.duration;
+    
+    const currentMinutes = Math.floor(currentTime / 60);
+    const currentSeconds = Math.floor(currentTime % 60);
+    
+    const totalMinutes = Math.floor(totalTime / 60);
+    const totalSeconds = Math.floor(totalTime % 60);
+    
+    audioStatusText.innerText = `${audioPlayStatus} • Duration: ${currentMinutes}:${currentSeconds < 10 ? '0' + currentSeconds : currentSeconds} - ${totalMinutes}:${totalSeconds < 10 ? '0' + totalSeconds : totalSeconds} • Volume: ${audio.volume}`;
 }
 
 function PlayTrack(file) {
@@ -62,8 +91,8 @@ function DrawBar(x1, y1, x2, y2, frequency) {
 }
 
 function DrawCircle() {
-    ctx.strokeStyle = isFileDragging ? 'rgba(122, 200, 115, 1)' : 'rgba(0, 0, 0, 1)';
-    ctx.lineWidth = isFileDragging ? 8 : 4;
+    ctx.strokeStyle = isFileDragging ? 'rgba(122, 200, 115, 0.5)' : 'rgba(0, 0, 0, 1)';
+    ctx.lineWidth = 4;
     
     ctx.beginPath();
     
@@ -98,7 +127,7 @@ function CanvasRender() {
     
     analyser.getByteFrequencyData(frequencyArray);
     for (let i = 0; i < 200; i++) {
-        let barHeight = frequencyArray[i] * 0.6 * 1;
+        let barHeight = frequencyArray[i] * 0.6 * 1.5;
         
         x = centerX + Math.cos(rads * i) * 120;
         y = centerY + Math.sin(rads * i) * 120;
@@ -115,6 +144,16 @@ canvas.addEventListener('click', () => {
     if(!audioInit) return;
     
     audio.paused ? audio.play() : audio.pause();
+});
+
+canvas.addEventListener('wheel', e => {
+    if(!audioInit) return;
+    
+    if(e.deltaY < 0) {
+        audio.volume = Math.min(audio.volume + 0.1, 1.0);
+    } else {
+        audio.volume = Math.max(audio.volume - 0.1, 0.0);
+    }
 });
 
 window.addEventListener('resize', () => ReCalculateCanvasSize());
@@ -152,3 +191,5 @@ window.addEventListener('drop', e => {
 });
 
 CanvasRender();
+
+setInterval(() => UpdateAudioStatus(), 500);

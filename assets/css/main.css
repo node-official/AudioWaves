@@ -37,10 +37,22 @@ body, #rootLayout {
     overflow: hidden;
 }
 
-.iWorkspace {
-    cursor: grab;
-}
-
-.iWorkspace.isDragging {
-    cursor: grabbing;
+.audioStatus {
+    display: flex;
+    
+    position: absolute;
+    
+    left: 0;
+    right: 0;
+    
+    bottom: 0;
+    
+    font-family: 'Consolas', sans-serif;
+    
+    font-weight: 400;
+    font-size: 14px;
+    
+    padding: 14px 0;
+    
+    justify-content: center;
 }
