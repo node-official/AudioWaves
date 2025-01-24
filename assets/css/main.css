@@ -55,4 +55,6 @@ body, #rootLayout {
     padding: 14px 0;
     
     justify-content: center;
+    
+    user-select: none;
 }

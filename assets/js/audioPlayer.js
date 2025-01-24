@@ -75,6 +75,10 @@ function PlayTrack(file) {
     
     frequencyArray = new Uint8Array(analyser.frequencyBinCount);
     
+    audio.addEventListener('timeupdate', () => UpdateAudioStatus());
+    audio.addEventListener('play', () => UpdateAudioStatus());
+    audio.addEventListener('pause', () => UpdateAudioStatus());
+    
     audio.play();
 }
 
@@ -94,15 +98,156 @@ function DrawCircle() {
     ctx.strokeStyle = isFileDragging ? 'rgba(122, 200, 115, 0.5)' : 'rgba(0, 0, 0, 1)';
     ctx.lineWidth = 4;
     
+    ctx.fillStyle = 'rgb(0, 0, 0)';
+    
     ctx.beginPath();
     
     ctx.arc(centerX, centerY, 118, 0, Math.PI * 2);
     
     ctx.stroke();
+    ctx.fill();
 }
+
+const SNOWIE_TEXTURE_PATHS = [
+    [
+        'https://raw.githubusercontent.com/node-official/EscapeSnowie_Textures/refs/heads/main/Snowie/0/Snow_1.png',
+        'https://raw.githubusercontent.com/node-official/EscapeSnowie_Textures/refs/heads/main/Snowie/0/Snow_2.png',
+        'https://raw.githubusercontent.com/node-official/EscapeSnowie_Textures/refs/heads/main/Snowie/0/Snow_3.png',
+    ]
+];
+
+let resourceCache = {};
+
+function DrawImage(url, x, y, opacity = 1) {
+    if(resourceCache[url]) {
+        let cachedImage = resourceCache[url];
+        
+        ctx.globalAlpha = opacity;
+        
+        ctx.drawImage(cachedImage, x, y, cachedImage.width, cachedImage.height);
+        
+        ctx.globalAlpha = 1;
+        
+        return;
+    }
+    
+    const imageElement = new Image();
+    
+    imageElement.onload = () => {
+        resourceCache[url] = imageElement;
+    };
+    
+    imageElement.src = url;
+}
+
+class SnowieLayer {
+    flakes = [];
+    flakeCount = 75;
+    
+    damping = 0.99;
+    
+    minDist = 1080;
+    maxDetectDistance = this.minDist / 2;
+    
+    spawnedFlakes = 0;
+    
+    InitFlakes() {
+        for(let i = 0; i < this.flakeCount; i++) {
+            this.flakes.push(this.CreateFlake());
+        }
+    }
+    
+    CreateFlake() {
+        const squareSize = canvas.height;
+        const halfSize = squareSize / 2;
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        
+        return {
+            speed: 0,
+            velY: 0,
+            velX: 0,
+            x: Math.random() * squareSize + (centerX - halfSize),
+            y: Math.random() * squareSize + (centerY - halfSize),
+            stepSize: Math.random() / 48,
+            step: 0,
+            opacity: Math.random() * 0.05 + 0.4,
+            textureId: Math.floor(Math.random() * 3)
+        };
+    }
+    
+    ResetFlake(flake) {
+        Object.assign(flake, this.CreateFlake());
+    }
+    
+    ResetAllFlakes() {
+        this.flakes.forEach(flake => {
+            Object.assign(flake, this.CreateFlake());
+        });
+    }
+    
+    Draw() {
+        if(audioInit) {
+            const { flakes, minDist, damping } = this;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+
+            for(let flake of flakes) {
+                const dx = centerX - flake.x;
+                const dy = centerY - flake.y;
+                const distSquared = dx * dx + dy * dy;
+                const dist = Math.sqrt(distSquared);
+                
+                if(dist < minDist && !audio.paused) {
+                    const force = minDist / distSquared;
+                    const xcomp = dx / dist;
+                    const ycomp = dy / dist;
+                    const deltaV = force * 1.5;
+                    
+                    flake.velX += deltaV * xcomp;
+                    flake.velY += deltaV * ycomp;
+                }
+                
+                flake.velX *= damping;
+                flake.velY *= damping;
+                
+                flake.y += flake.velY;
+                flake.x += flake.velX;
+                
+                if(dist < 118) {
+                    this.ResetFlake(flake);
+                }
+                
+                const maxOpacity = 1;
+                const minOpacity = 0;
+                const maxDistance = 512;
+                
+                const opacity = Math.max(minOpacity, maxOpacity - (dist / maxDistance) * maxOpacity);
+                
+                //let texturePath = SNOWIE_TEXTURE_PATHS[0][flake.textureId];
+                //DrawImage(texturePath, flake.x - 4.5, flake.y - 4.5, opacity);
+                
+                ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+                ctx.lineWidth = 1;
+                
+                ctx.beginPath();
+                
+                ctx.arc(flake.x, flake.y, opacity * 5, 0, Math.PI * 2);
+                
+                ctx.stroke();
+            }
+        }
+    }
+}
+
+const lightLayer = new SnowieLayer();
+
+lightLayer.InitFlakes();
 
 function CanvasRender() {
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+    
+    lightLayer.Draw();
     
     DrawCircle();
     
@@ -191,5 +336,3 @@ window.addEventListener('drop', e => {
 });
 
 CanvasRender();
-
-setInterval(() => UpdateAudioStatus(), 500);

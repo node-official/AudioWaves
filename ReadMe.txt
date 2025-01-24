@@ -1,7 +1,7 @@
 Audio Waves
 
 : INFO
-Latest release: 1.0.1
+Latest release: 1.0.2
 Developer: Node
 
 : FEATURES
@@ -9,12 +9,12 @@ Developer: Node
 - PLAY/PAUSE - Just click on the circle.
 
 : CHANGES
-- Added volume change for mouse wheel. (Scroll Up = +0.1, or Down = -0.1)
-- Audio status bar.
-- Updated ReadMe.txt to match "Node's Standard Documentation and ReadMe Format (NSDRF)" format.
+- Visual improvements.
+
+: DONE
+- Effects (Black Hole Gravity Effect) [+ DONE]
 
 : IN PROGRESS
-- Effects (Black hole, glass, blur and etc.)
 - Audio uploading.
 
 
